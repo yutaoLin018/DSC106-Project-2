@@ -46,34 +46,44 @@ infra = infra[["Country Name", "Country Code", "Year", internet_col]].copy()
 poverty = poverty[["Country Name", "Country Code", "Year", poverty_col]].copy()
 
 # =========================
-# 4. CLEAN YEAR
+# 4. CLEAN YEAR + VALUES
 # =========================
-for df in [econ, edu, infra, poverty]:
+for df, value_col in [
+    (econ, gdp_col),
+    (edu, school_col),
+    (infra, internet_col),
+    (poverty, poverty_col)
+]:
     df["Year"] = pd.to_numeric(df["Year"], errors="coerce")
+    df[value_col] = pd.to_numeric(df[value_col], errors="coerce")
     df.dropna(subset=["Year"], inplace=True)
     df["Year"] = df["Year"].astype(int)
 
 # =========================
-# 5. GLOBAL TRENDS
+# 5. HELPER: KEEP YEARS WITH ENOUGH COUNTRIES
 # =========================
-gdp_global = econ.groupby("Year")[gdp_col].mean().reset_index()
-school_global = edu.groupby("Year")[school_col].mean().reset_index()
-internet_global = infra.groupby("Year")[internet_col].mean().reset_index()
-
-# poverty: keep only years with enough countries
-poverty_valid = poverty.dropna(subset=[poverty_col]).copy()
-poverty_counts = poverty_valid.groupby("Year")[poverty_col].count().reset_index(name="n")
-good_poverty_years = poverty_counts[poverty_counts["n"] >= 30]["Year"]
-
-poverty_global = (
-    poverty_valid[poverty_valid["Year"].isin(good_poverty_years)]
-    .groupby("Year")[poverty_col]
-    .mean()
-    .reset_index()
-)
+def mean_by_year_with_min_count(df, value_col, min_count=30):
+    valid = df.dropna(subset=[value_col]).copy()
+    counts = valid.groupby("Year")[value_col].count().reset_index(name="n")
+    good_years = counts[counts["n"] >= min_count]["Year"]
+    result = (
+        valid[valid["Year"].isin(good_years)]
+        .groupby("Year")[value_col]
+        .mean()
+        .reset_index()
+    )
+    return result
 
 # =========================
-# 6. FIGURE 1
+# 6. GLOBAL TRENDS FOR FIGURE 1
+# =========================
+gdp_global = mean_by_year_with_min_count(econ, gdp_col, min_count=30)
+school_global = mean_by_year_with_min_count(edu, school_col, min_count=30)
+internet_global = mean_by_year_with_min_count(infra, internet_col, min_count=30)
+poverty_global = mean_by_year_with_min_count(poverty, poverty_col, min_count=30)
+
+# =========================
+# 7. FIGURE 1
 #    PRO SIDE: GLOBAL TRENDS
 # =========================
 fig, axes = plt.subplots(2, 2, figsize=(14, 9))
@@ -103,7 +113,7 @@ plt.tight_layout()
 plt.show()
 
 # =========================
-# 7. REGION MAP FOR FIGURE 2
+# 8. REGION MAP FOR FIGURE 2
 # =========================
 region_map = {
     "USA": "North America", "CAN": "North America", "MEX": "North America",
@@ -123,21 +133,21 @@ econ["Region"] = econ["Country Code"].map(region_map)
 infra["Region"] = infra["Country Code"].map(region_map)
 
 econ_reg = (
-    econ.dropna(subset=["Region"])
+    econ.dropna(subset=["Region", gdp_col])
     .groupby(["Year", "Region"])[gdp_col]
     .mean()
     .reset_index()
 )
 
 infra_reg = (
-    infra.dropna(subset=["Region"])
+    infra.dropna(subset=["Region", internet_col])
     .groupby(["Year", "Region"])[internet_col]
     .mean()
     .reset_index()
 )
 
 # =========================
-# 8. FIGURE 2
+# 9. FIGURE 2
 #    PRO SIDE: REGIONAL TRENDS
 # =========================
 fig, axes = plt.subplots(1, 2, figsize=(14, 5))
@@ -165,14 +175,19 @@ plt.tight_layout()
 plt.show()
 
 # =========================
-# 9. FIGURE 3
-#    CON SIDE: POVERTY RANKING
+# 10. FIGURE 3
+#     CON SIDE: POVERTY RANKING
 # =========================
 poverty_nonmissing = poverty.dropna(subset=[poverty_col]).copy()
 
-year_counts = poverty_nonmissing.groupby("Year")[poverty_col].count().reset_index(name="count")
+poverty_year_counts = (
+    poverty_nonmissing.groupby("Year")[poverty_col]
+    .count()
+    .reset_index(name="count")
+)
+
 best_poverty_year = int(
-    year_counts.sort_values(["count", "Year"], ascending=[False, False]).iloc[0]["Year"]
+    poverty_year_counts.sort_values(["count", "Year"], ascending=[False, False]).iloc[0]["Year"]
 )
 
 poverty_latest = poverty_nonmissing[poverty_nonmissing["Year"] == best_poverty_year].copy()
@@ -188,38 +203,71 @@ plt.tight_layout()
 plt.show()
 
 # =========================
-# 10. FIGURE 4
+# 11. FIGURE 4
 #     CON SIDE: GDP + INTERNET EXTREMES
 # =========================
-latest_gdp_year = int(econ.dropna(subset=[gdp_col])["Year"].max())
-latest_internet_year = int(infra.dropna(subset=[internet_col])["Year"].max())
 
-gdp_latest = econ[econ["Year"] == latest_gdp_year].dropna(subset=[gdp_col]).copy()
-internet_latest = infra[infra["Year"] == latest_internet_year].dropna(subset=[internet_col]).copy()
+# GDP year: latest year with enough country coverage
+gdp_nonmissing = econ.dropna(subset=[gdp_col]).copy()
+gdp_year_counts = gdp_nonmissing.groupby("Year")[gdp_col].count().reset_index(name="count")
+best_gdp_year = int(
+    gdp_year_counts[gdp_year_counts["count"] >= 30]
+    .sort_values("Year", ascending=False)
+    .iloc[0]["Year"]
+)
 
-gdp_top10 = gdp_latest.nlargest(10, gdp_col).sort_values(gdp_col)
-gdp_bottom10 = gdp_latest.nsmallest(10, gdp_col).sort_values(gdp_col)
+gdp_latest = gdp_nonmissing[gdp_nonmissing["Year"] == best_gdp_year].copy()
+gdp_latest = gdp_latest.sort_values(by=gdp_col)
+gdp_bottom10 = gdp_latest.head(10).copy()
+gdp_top10 = gdp_latest.tail(10).copy()
 
-internet_top10 = internet_latest.nlargest(10, internet_col).sort_values(internet_col)
-internet_bottom10 = internet_latest.nsmallest(10, internet_col).sort_values(internet_col)
+# Internet year: use a recent year with enough country coverage
+internet_nonmissing = infra.dropna(subset=[internet_col]).copy()
+
+internet_year_counts = (
+    internet_nonmissing.groupby("Year")[internet_col]
+    .count()
+    .reset_index(name="count")
+)
+
+print(internet_year_counts.sort_values("Year", ascending=False).head(20))
+
+# pick the latest year that still has at least 100 countries
+possible_years = internet_year_counts[internet_year_counts["count"] >= 100]
+
+best_internet_year = int(
+    possible_years.sort_values("Year", ascending=False).iloc[0]["Year"]
+)
+
+internet_latest = internet_nonmissing[
+    internet_nonmissing["Year"] == best_internet_year
+].copy()
+
+# keep only reasonable values
+internet_latest = internet_latest[
+    (internet_latest[internet_col] >= 0) & (internet_latest[internet_col] <= 100)
+].copy()
+
+internet_bottom10 = internet_latest.nsmallest(10, internet_col).copy()
+internet_top10 = internet_latest.nlargest(10, internet_col).copy()
 
 fig, axes = plt.subplots(2, 2, figsize=(14, 10))
 fig.suptitle("Average Gains Conceal Enormous Gaps Between Countries", fontsize=18)
 
 axes[0, 0].barh(gdp_bottom10["Country Name"], gdp_bottom10[gdp_col])
-axes[0, 0].set_title(f"Lowest GDP per Capita ({latest_gdp_year})")
+axes[0, 0].set_title(f"Lowest GDP per Capita ({best_gdp_year})")
 axes[0, 0].set_xlabel("GDP per capita")
 
 axes[0, 1].barh(gdp_top10["Country Name"], gdp_top10[gdp_col])
-axes[0, 1].set_title(f"Highest GDP per Capita ({latest_gdp_year})")
+axes[0, 1].set_title(f"Highest GDP per Capita ({best_gdp_year})")
 axes[0, 1].set_xlabel("GDP per capita")
 
 axes[1, 0].barh(internet_bottom10["Country Name"], internet_bottom10[internet_col])
-axes[1, 0].set_title(f"Lowest Internet Access ({latest_internet_year})")
+axes[1, 0].set_title(f"Lowest Internet Access ({best_internet_year})")
 axes[1, 0].set_xlabel("% using the Internet")
 
 axes[1, 1].barh(internet_top10["Country Name"], internet_top10[internet_col])
-axes[1, 1].set_title(f"Highest Internet Access ({latest_internet_year})")
+axes[1, 1].set_title(f"Highest Internet Access ({best_internet_year})")
 axes[1, 1].set_xlabel("% using the Internet")
 
 plt.tight_layout()
