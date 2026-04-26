@@ -27,30 +27,35 @@
                 <img src="picture/Figure_1.png" alt="Four global trend charts showing GDP per capita, school enrollment, internet access, and poverty over time." />
                 <figcaption>
                     <strong>A Half-Century of Progress in Human Development.</strong>
-                    This visualization uses long-run global averages to present a broad progress narrative. GDP per capita rises, school enrollment increases, internet access expands rapidly, and poverty declines.
+                    This visualization uses four coordinated global trend panels to argue that human development improved substantially over time. Across long-run global averages, GDP per capita rises, school enrollment increases, internet access expands dramatically, and poverty declines.
                 </figcaption>
             </figure>
 
             <p><strong>Design Decisions and Rationale:</strong></p>
             <ul>
                 <li>
-                    <strong>I used global averages across countries.</strong>
-                    Averaging across countries makes the overall trend easier to read and supports the argument that development improved broadly over time. This was persuasive because it reduced noise, but it also hides inequality between countries.
+                    <strong>I used global averages across countries instead of showing individual countries.</strong>
+                    This was one of the most important persuasive decisions in the chart. Using country-level lines would have made the figure noisy and would have brought exceptions and unevenness to the foreground. By averaging across countries, I created smoother trend lines that are easier to interpret as broad evidence of worldwide progress. This choice worked well because it reduced clutter and supported a clear narrative, but it also hides disparities between countries. I considered showing a handful of selected countries, but I decided against that because it would have looked more selective and made the figure less effective at arguing that progress was global.
                 </li>
 
                 <li>
-                    <strong>I used a long time span.</strong>
-                    Showing many decades makes the upward and downward trends look more dramatic and stable. I chose this because it makes the historical story clearer, although it also deemphasizes short-term setbacks and recent unevenness.
+                    <strong>I used a long time span rather than focusing on a recent period.</strong>
+                    Showing multiple decades makes the story feel much larger and more historically significant. In particular, long-run trends make the rise in GDP per capita and internet access look steady and almost inevitable, while the fall in poverty looks like a major historical achievement. This helps persuade the reader that human development did not just improve slightly, but improved substantially over time. What worked well here is that long-term movement is visually dramatic. The downside is that this choice downplays short-term setbacks, reversals, and the fact that recent progress may not have been as even as the figure suggests. I considered using only post-1990 data, but that would have made the gains look smaller and weakened the overall argument.
                 </li>
 
                 <li>
-                    <strong>I combined four indicators into one multi-panel visualization.</strong>
-                    Using GDP, school enrollment, internet access, and poverty together makes the argument feel broader and harder to dismiss as cherry-picking a single variable. I considered using only one metric, but this multi-panel layout was more convincing because it suggested progress across several dimensions of life.
+                    <strong>I combined four indicators into one multi-panel figure.</strong>
+                    Instead of relying on a single metric, I chose four measures that together imply improvement across several dimensions of life: income, education, infrastructure, and poverty. This makes the visualization more persuasive because it suggests that the argument does not depend on one carefully chosen variable. A reader might dismiss a single chart as cherry-picking, but it is harder to dismiss four panels all pointing in the same direction. This design worked well because it made the figure feel broad and comprehensive. I considered using only GDP and poverty, but adding school enrollment and internet access made the progress narrative feel more socially grounded and less purely economic.
                 </li>
 
                 <li>
-                    <strong>I used a claim-style title and annotations.</strong>
-                    The title and annotations actively guide the reader toward interpreting the figure as evidence of major progress. This worked well for persuasion, but it is less neutral because it frames the conclusion before the reader fully studies the data.
+                    <strong>I used a claim-style title and annotations rather than a neutral label.</strong>
+                    The title, “A Half-Century of Progress in Human Development,” already tells the reader how to interpret the chart before they look closely at the lines. The annotations reinforce that reading by explicitly pointing to major gains, such as poverty falling by more than half or internet access expanding from almost nothing to majority usage. This was very effective for persuasion because it reduces the work the reader must do to find the intended takeaway. At the same time, it is less neutral than simply naming variables. I considered a more descriptive title like “Global Trends in Human Development Indicators,” but that felt too passive and much less persuasive.
+                </li>
+
+                <li>
+                    <strong>I filtered to years with enough reporting countries.</strong>
+                    This was a less visible design choice, but it mattered for credibility and readability. Some indicators had sparse coverage in certain years, and including those years created unstable spikes or dips that distracted from the main story. Restricting the figure to years with enough reporting countries produced cleaner trends that were easier to interpret. This made the figure more effective because the lines look smoother and more reliable. The tradeoff is that the transformation is selective and could be seen as favoring interpretability over completeness. I chose this over plotting every available year because the noisier version weakened the persuasive impact and looked less polished.
                 </li>
             </ul>
         </section>
@@ -62,7 +67,7 @@
                 <img src="picture/Figure_4.png" alt="Line chart comparing percent change in global average GDP per capita and the gap between richest and poorest countries over time." />
                 <figcaption>
                     <strong>Prosperity Rose, But So Did the Global Income Gap.</strong>
-                    This visualization argues that rising average prosperity did not mean equally shared gains, because the gap between richer and poorer countries also increased over time.
+                    This visualization argues against the proposition by showing that while average GDP per capita rose over time, the gap between richer and poorer countries also increased. It reframes “development” as unevenly shared rather than universally experienced.
                 </figcaption>
             </figure>
 
@@ -70,27 +75,27 @@
             <ul>
                 <li>
                     <strong>I replaced a static snapshot with an inequality-over-time chart.</strong>
-                    I chose a time-series inequality chart because it creates a stronger counterargument than just showing one bad year. This worked better because it suggests that inequality was not only present, but persistent and possibly worsening.
+                    Earlier in the project, I considered using a second chart that showed only a single-year comparison of top and bottom countries. While that worked reasonably well, it felt too similar to a ranking-style argument and did not develop the opposing case enough. I switched to an inequality-over-time chart because it makes a stronger claim: not only did inequality exist, but it remained meaningful as average prosperity increased. This worked better because it gives the opposing side a historical structure rather than just a dramatic snapshot. It also creates a stronger contrast with the “for” visualization, which also relies on long-run trends.
                 </li>
 
                 <li>
-                    <strong>I compared the richest 10% and poorest 10% of countries.</strong>
-                    This emphasizes the most extreme differences and makes the inequality story more dramatic. I chose it because it is persuasive and still defensible, but it foregrounds extremes instead of showing the full distribution.
+                    <strong>I compared the richest 10% and poorest 10% of countries rather than the whole distribution.</strong>
+                    This was a deliberately persuasive choice. By focusing on the top and bottom deciles, I emphasized the largest and most emotionally compelling differences in the data. That makes the inequality story more dramatic and easier to understand than a more technical measure like a full variance or dispersion statistic. The downside is that it foregrounds extremes and can make inequality look harsher than a median-based or distribution-wide metric might. I considered using the Gini index instead, but I decided against it because it would require more explanation and would likely be less immediately persuasive to a general viewer.
                 </li>
 
                 <li>
                     <strong>I indexed both lines to the same baseline year.</strong>
-                    Converting both series into percent change makes it easier to compare their growth over time, even though their raw values are very different. This made the chart much more readable than plotting them on separate scales or leaving them in original units.
+                    In raw units, global average GDP per capita and the rich-poor gap are not directly comparable. By converting both to percent change from the same starting year, I made them visually comparable and encouraged the reader to compare their trajectories rather than their original magnitudes. This worked especially well because the chart can now tell a simple story: prosperity went up, but so did the gap. I considered placing the two series on separate axes, but that would have felt more obviously manipulative and might have made the chart harder to defend. Indexing both lines to the same starting point felt cleaner and more subtle.
                 </li>
 
                 <li>
-                    <strong>I paired average GDP growth with the rich-poor gap in the same figure.</strong>
-                    Showing these lines together encourages the reader to see economic growth and inequality as connected rather than separate issues. This pairing made the opposing argument much stronger because it suggests that prosperity and uneven gains can happen at the same time.
+                    <strong>I paired economic growth with inequality in the same figure.</strong>
+                    This is a framing decision as much as a visual one. Instead of showing an inequality chart by itself, I deliberately put the rich-poor gap next to the growth story so the reader is invited to read them together. That pairing suggests that growth did not translate into equally shared benefits, even though the chart does not literally prove causation. This worked very well for persuasion because it makes the counterargument feel stronger and more structural than simply saying “some countries are still poor.” I considered separating the gap into its own chart, but I kept both lines together because the comparison is the main point.
                 </li>
 
                 <li>
-                    <strong>I used a skeptical title and annotations.</strong>
-                    The wording frames the figure as evidence that average progress hid unequal outcomes. This was effective for persuasion because it pushed the reader to question whether “development” was experienced equally across countries.
+                    <strong>I used a skeptical title and annotations to reinterpret development.</strong>
+                    The title, “Prosperity Rose, But So Did the Global Income Gap,” tells the reader that the chart is not simply about growth but about the limits of growth as a measure of progress. The annotations reinforce this by highlighting that average prosperity rose sharply while inequality also widened. This worked well because it turns what could have been a dry comparison into a pointed critique of the optimistic narrative. I considered a more neutral title, but the skeptical framing made the opposing argument much more compelling and better aligned with the goal of persuasion.
                 </li>
             </ul>
         </section>
@@ -99,15 +104,15 @@
             <h2>Final Reflection</h2>
 
             <p>
-                This project made it clear to me that persuasive visualization often depends more on framing than on changing the underlying data. For the first visualization, it was straightforward to build a strong progress narrative by using global averages, a long time span, and several indicators that all moved in a positive direction. For the second visualization, it was harder to create an equally strong counterargument without making the manipulation feel too obvious. What surprised me most was how much the choice of aggregation, metric, and title could shift the meaning of the same dataset.
+                This project made me realize that the most powerful persuasive choices are often not the most obvious ones. Before working on these visualizations, I mostly associated deception with things like truncated axes, misleading scales, or distorted chart types. Those still matter, but what stood out to me much more was how strongly the argument changed when I changed the framing. In the first visualization, using global averages, multiple indicators, and a long time span made the story of human development feel broad, stable, and almost unquestionably positive. In the second visualization, using an inequality-over-time metric and focusing on the gap between richer and poorer countries made the very same dataset feel much more troubling. Neither chart invents data, yet the emotional and interpretive effect is very different.
             </p>
 
             <p>
-                Working on both sides changed how I think about ethical analysis and visualization. I now think ethical visualization is not just about avoiding falsehoods, but also about being aware of how design decisions steer interpretation. Choices like averaging, ranking, selecting a baseline year, or emphasizing extreme groups can all be technically valid while still pushing the reader toward one conclusion. That means the line between acceptable persuasion and misleading framing is often blurry.
+                One difficult part of the design process was building a strong opposing argument without making it look obviously manipulative. It was easy to create a dramatic “against” chart by focusing on a single bad year or a handful of extreme countries, but those approaches felt weaker because they were easier to dismiss as cherry-picking. The inequality-over-time chart was harder to construct, but ultimately more satisfying because it made the counterargument feel deeper and more defensible. What surprised me most was that even a technically reasonable transformation, such as indexing both lines to the same baseline year or comparing top and bottom deciles, carries a strong persuasive effect. That means ethical questions in visualization are not just about whether a chart is “correct,” but about what perspective it prioritizes and what context it leaves out.
             </p>
 
             <p>
-                My current view is that persuasive choices are acceptable when they clarify a real pattern in the data without hiding important context that would seriously change the interpretation. They become misleading when the design intentionally narrows the reader’s view so much that the chart implies a conclusion the fuller data would not support. This project showed me that ethical visualization is less about whether a chart is biased at all, and more about whether the bias is transparent, proportionate, and fair to the complexity of the data.
+                I now think ethical analysis and visualization means being conscious of how design choices shape interpretation and being honest about those choices. I do not think there is always a clean boundary between acceptable persuasion and misleading framing. A choice can be both valid and slanted at the same time. For example, averaging across countries is not false, but it can hide inequality; focusing on the richest and poorest countries is not false either, but it can make inequality feel more dominant than other summaries would. The best boundary I can draw is that persuasive choices are acceptable when they clarify a real pattern without suppressing context so severely that the reader would likely reach a very different conclusion if the omitted information were visible. This project made me much more aware that the responsibility of a data scientist is not only to avoid making false claims, but also to think carefully about how truthful data can still be used to steer people toward a narrow interpretation.
             </p>
         </section>
     </main>
