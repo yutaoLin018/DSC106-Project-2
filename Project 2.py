@@ -224,7 +224,7 @@ infra_reg = (
 )
 
 # =========================
-# 9. FIGURE 2
+# FIGURE 2
 # PRO SIDE: REGIONAL TRENDS
 # =========================
 selected_regions = [
@@ -235,6 +235,15 @@ selected_regions = [
     "Sub-Saharan Africa"
 ]
 
+# colorblind-friendlier palette
+region_colors = {
+    "Europe": "#1f77b4",              # blue
+    "North America": "#ff7f0e",       # orange
+    "East Asia & Pacific": "#9467bd", # purple
+    "South Asia": "#8c564b",          # brown
+    "Sub-Saharan Africa": "#e377c2"   # pink
+}
+
 econ_reg_small = econ_reg[econ_reg["Region"].isin(selected_regions)].copy()
 infra_reg_small = infra_reg[infra_reg["Region"].isin(selected_regions)].copy()
 
@@ -244,76 +253,81 @@ add_title_and_subtitle(
     "Progress Was Not Isolated to One Part of the World",
     "Selected regional averages show rising incomes and internet access across very different starting points"
 )
-
 fig.subplots_adjust(top=0.82, wspace=0.32)
 
-gdp_offsets = {
-    "Europe": 200,
-    "North America": -600,
-    "East Asia & Pacific": -800,
-    "South Asia": 350,
-    "Sub-Saharan Africa": 700
+# manual end-label positions so they don't overlap
+gdp_label_positions = {
+    "Europe": (2020.5, 37500),
+    "North America": (2020.5, 36700),
+    "East Asia & Pacific": (2020.5, 11000),
+    "South Asia": (2020.5, 2300),
+    "Sub-Saharan Africa": (2020.5, 3200)
 }
 
-internet_offsets = {
-    "Europe": 1.5,
-    "North America": -3.5,
-    "East Asia & Pacific": -5.5,
-    "South Asia": 4.0,
-    "Sub-Saharan Africa": 0.8
+internet_label_positions = {
+    "Europe": (2020.8, 94),
+    "North America": (2020.8, 69.2),
+    "East Asia & Pacific": (2020.8, 67.3),
+    "South Asia": (2020.8, 37.5),
+    "Sub-Saharan Africa": (2020.8, 41.0)
 }
 
-# Regional GDP
+# Left panel: GDP
 ax = axes[0]
 for region in selected_regions:
     temp = econ_reg_small[econ_reg_small["Region"] == region]
-    ax.plot(temp["Year"], temp[gdp_col], linewidth=2)
+    ax.plot(
+        temp["Year"], temp[gdp_col],
+        linewidth=2.5,
+        color=region_colors[region]
+    )
 
     if len(temp) > 0:
-        ax.text(
-            temp["Year"].iloc[-1] + 0.35,
-            temp[gdp_col].iloc[-1] + gdp_offsets[region],
+        x_end = temp["Year"].iloc[-1]
+        y_end = temp[gdp_col].iloc[-1]
+        label_x, label_y = gdp_label_positions[region]
+
+        ax.annotate(
             region,
+            xy=(x_end, y_end),
+            xytext=(label_x, label_y),
+            textcoords="data",
             fontsize=9,
-            va="center"
+            va="center",
+            color=region_colors[region],
+            arrowprops=dict(arrowstyle="-", color=region_colors[region], lw=0.8),
+            bbox=dict(facecolor="white", alpha=0.85, edgecolor="none", pad=1.2)
         )
 
 ax.set_title("Regional GDP per Capita", fontsize=14)
 ax.set_xlabel("Year")
 ax.set_ylabel("GDP per capita")
-ax.set_xlim(econ_reg_small["Year"].min(), econ_reg_small["Year"].max() + 4)
+ax.set_xlim(econ_reg_small["Year"].min(), econ_reg_small["Year"].max() + 8)
 ax.spines["top"].set_visible(False)
 ax.spines["right"].set_visible(False)
 
 ax.annotate(
     "All selected regions trend upward,\nthough from very different baselines",
     xy=(2000, 14500),
-    xytext=(1978, 26000),
+    xytext=(1976, 26000),
     arrowprops=dict(arrowstyle="->"),
     fontsize=10,
     bbox=dict(facecolor="white", alpha=0.85, edgecolor="none")
 )
 
-# Regional Internet
+# Right panel: Internet
 ax = axes[1]
-
-# manual label positions to avoid overlap
-internet_label_positions = {
-    "Europe": (2020.8, 94),
-    "North America": (2020.8, 69.0),
-    "East Asia & Pacific": (2020.8, 67.2),
-    "South Asia": (2020.8, 37.5),
-    "Sub-Saharan Africa": (2020.8, 41.5)
-}
-
 for region in selected_regions:
     temp = infra_reg_small[infra_reg_small["Region"] == region]
-    ax.plot(temp["Year"], temp[internet_col], linewidth=2)
+    ax.plot(
+        temp["Year"], temp[internet_col],
+        linewidth=2.5,
+        color=region_colors[region]
+    )
 
     if len(temp) > 0:
         x_end = temp["Year"].iloc[-1]
         y_end = temp[internet_col].iloc[-1]
-
         label_x, label_y = internet_label_positions[region]
 
         ax.annotate(
@@ -323,8 +337,9 @@ for region in selected_regions:
             textcoords="data",
             fontsize=9,
             va="center",
-            arrowprops=dict(arrowstyle="-", color="gray", lw=0.8),
-            bbox=dict(facecolor="white", alpha=0.85, edgecolor="none", pad=1.5)
+            color=region_colors[region],
+            arrowprops=dict(arrowstyle="-", color=region_colors[region], lw=0.8),
+            bbox=dict(facecolor="white", alpha=0.85, edgecolor="none", pad=1.2)
         )
 
 ax.set_title("Regional Internet Access", fontsize=14)
@@ -410,104 +425,108 @@ plt.savefig("Figure_3_improved.png", dpi=300, bbox_inches="tight")
 plt.show()
 
 # =========================
-# 11. FIGURE 4
-# CON SIDE: GDP + INTERNET EXTREMES
+# FIGURE 4
+# CON SIDE: INEQUALITY OVER TIME
 # =========================
-gdp_nonmissing = econ.dropna(subset=[gdp_col]).copy()
-gdp_year_counts = gdp_nonmissing.groupby("Year")[gdp_col].count().reset_index(name="count")
+def decile_gap_by_year(df, value_col, min_countries=50):
+    rows = []
 
-best_gdp_year = int(
-    gdp_year_counts[gdp_year_counts["count"] >= 30]
-    .sort_values("Year", ascending=False)
-    .iloc[0]["Year"]
-)
+    valid = df.dropna(subset=[value_col]).copy()
 
-gdp_latest = gdp_nonmissing[gdp_nonmissing["Year"] == best_gdp_year].copy()
-gdp_bottom10 = gdp_latest.nsmallest(10, gdp_col).sort_values(gdp_col)
-gdp_top10 = gdp_latest.nlargest(10, gdp_col).sort_values(gdp_col)
+    for year, grp in valid.groupby("Year"):
+        vals = np.sort(grp[value_col].values)
+        n = len(vals)
 
-internet_nonmissing = infra.dropna(subset=[internet_col]).copy()
-internet_year_counts = (
-    internet_nonmissing.groupby("Year")[internet_col]
-    .count()
-    .reset_index(name="count")
-)
+        if n < min_countries:
+            continue
 
-possible_years = internet_year_counts[internet_year_counts["count"] >= 100]
-best_internet_year = int(
-    possible_years.sort_values("Year", ascending=False).iloc[0]["Year"]
-)
+        k = max(1, int(np.floor(n * 0.10)))
 
-internet_latest = internet_nonmissing[
-    internet_nonmissing["Year"] == best_internet_year
-].copy()
+        bottom_mean = vals[:k].mean()
+        top_mean = vals[-k:].mean()
+        global_mean = vals.mean()
 
-internet_latest = internet_latest[
-    (internet_latest[internet_col] >= 0) & (internet_latest[internet_col] <= 100)
-].copy()
+        if bottom_mean <= 0:
+            continue
 
-internet_bottom10 = internet_latest.nsmallest(10, internet_col).sort_values(internet_col)
-internet_top10 = internet_latest.nlargest(10, internet_col).sort_values(internet_col)
+        gap_ratio = top_mean / bottom_mean
 
-fig, axes = plt.subplots(2, 2, figsize=(15, 10.5))
+        rows.append({
+            "Year": year,
+            "global_mean_gdp": global_mean,
+            "top_bottom_ratio": gap_ratio,
+            "n_countries": n
+        })
 
+    out = pd.DataFrame(rows).sort_values("Year").reset_index(drop=True)
+    return out
+
+gap_df = decile_gap_by_year(econ, gdp_col, min_countries=50)
+
+# baseline year = first available year in the filtered series
+base_year = int(gap_df["Year"].iloc[0])
+
+gap_df["gdp_pct_change"] = (
+    (gap_df["global_mean_gdp"] / gap_df["global_mean_gdp"].iloc[0]) - 1
+) * 100
+
+gap_df["gap_pct_change"] = (
+    (gap_df["top_bottom_ratio"] / gap_df["top_bottom_ratio"].iloc[0]) - 1
+) * 100
+
+fig, ax = plt.subplots(figsize=(14, 9))
 add_title_and_subtitle(
     fig,
-    "The Average Story Hides a World of Extremes",
-    "Top and bottom 10 countries reveal how far apart development outcomes still are"
-)
-fig.subplots_adjust(top=0.86, hspace=0.28, wspace=0.34)
-
-# Lowest GDP
-ax = axes[0, 0]
-ax.barh(gdp_bottom10["Country Name"], gdp_bottom10[gdp_col])
-ax.set_title(f"Countries left furthest behind in income ({best_gdp_year})", fontsize=13)
-ax.set_xlabel("GDP per capita")
-ax.spines["top"].set_visible(False)
-ax.spines["right"].set_visible(False)
-
-# Highest GDP
-ax = axes[0, 1]
-ax.barh(gdp_top10["Country Name"], gdp_top10[gdp_col])
-ax.set_title(f"Countries far ahead in income ({best_gdp_year})", fontsize=13)
-ax.set_xlabel("GDP per capita")
-ax.spines["top"].set_visible(False)
-ax.spines["right"].set_visible(False)
-
-# Lowest Internet
-ax = axes[1, 0]
-ax.barh(internet_bottom10["Country Name"], internet_bottom10[internet_col])
-ax.set_title(f"Lowest internet access ({best_internet_year})", fontsize=13)
-ax.set_xlabel("% using the Internet")
-ax.spines["top"].set_visible(False)
-ax.spines["right"].set_visible(False)
-
-lowest_internet_country = internet_bottom10.iloc[0]
-ax.annotate(
-    f"{lowest_internet_country['Country Name']} remained below {lowest_internet_country[internet_col]:.0f}%",
-    xy=(lowest_internet_country[internet_col], 0),
-    xytext=(10, 2),
-    arrowprops=dict(arrowstyle="->"),
-    fontsize=9,
-    bbox=dict(facecolor="white", alpha=0.85, edgecolor="none")
+    "Prosperity Rose, But So Did the Global Income Gap",
+    f"Global average GDP per capita and the rich-poor country gap, indexed to {base_year} = 0%"
 )
 
-# Highest Internet
-ax = axes[1, 1]
-ax.barh(internet_top10["Country Name"], internet_top10[internet_col])
-ax.set_title(f"Highest internet access ({best_internet_year})", fontsize=13)
-ax.set_xlabel("% using the Internet")
+ax.plot(
+    gap_df["Year"], gap_df["gdp_pct_change"],
+    linewidth=3, marker="o", markersize=4,
+    label="Global average GDP per capita",
+    color="#1f77b4"
+)
+
+ax.plot(
+    gap_df["Year"], gap_df["gap_pct_change"],
+    linewidth=3, marker="o", markersize=4,
+    label="Gap between richest 10% and poorest 10% of countries",
+    color="#d95f02"
+)
+
+ax.axhline(0, linestyle="--", linewidth=1, color="gray")
+
+ax.set_xlabel("Year", fontsize=13)
+ax.set_ylabel(f"% change since {base_year}", fontsize=13)
+ax.set_title("Rising average prosperity did not mean equally shared gains", fontsize=15)
+ax.legend(loc="upper left", fontsize=11)
+
 ax.spines["top"].set_visible(False)
 ax.spines["right"].set_visible(False)
 
-highest_internet_country = internet_top10.iloc[-1]
+# annotate final GDP growth
+gdp_last = gap_df.iloc[-1]
 ax.annotate(
-    "Top countries approached\nuniversal access",
-    xy=(highest_internet_country[internet_col], len(internet_top10) - 1),
-    xytext=(55, 7),
+    f"Average GDP per capita\n+{gdp_last['gdp_pct_change']:.0f}% since {base_year}",
+    xy=(gdp_last["Year"], gdp_last["gdp_pct_change"]),
+    xytext=(0.73, 0.78),
+    textcoords="axes fraction",
     arrowprops=dict(arrowstyle="->"),
-    fontsize=9,
-    bbox=dict(facecolor="white", alpha=0.85, edgecolor="none")
+    fontsize=11,
+    bbox=dict(facecolor="white", alpha=0.9, edgecolor="none")
+)
+
+# annotate final inequality growth
+gap_last = gap_df.iloc[-1]
+ax.annotate(
+    f"Rich-poor country gap\n+{gap_last['gap_pct_change']:.0f}% since {base_year}",
+    xy=(gap_last["Year"], gap_last["gap_pct_change"]),
+    xytext=(0.70, 0.48),
+    textcoords="axes fraction",
+    arrowprops=dict(arrowstyle="->"),
+    fontsize=11,
+    bbox=dict(facecolor="white", alpha=0.9, edgecolor="none")
 )
 
 plt.savefig("Figure_4_improved.png", dpi=300, bbox_inches="tight")
