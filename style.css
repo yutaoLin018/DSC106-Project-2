@@ -128,7 +128,7 @@ figure > figcaption::before {
 }
 
 p {
-    max-width: 75ch;
+    max-width: none;
 }
 
 section + section {
