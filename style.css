@@ -127,7 +127,7 @@ figure > figcaption::before {
     color: var(--color-neutral-40);
 }
 
-p {
+.reflection p {
     max-width: none;
 }
 
