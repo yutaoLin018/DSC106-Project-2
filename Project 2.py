@@ -463,7 +463,6 @@ def decile_gap_by_year(df, value_col, min_countries=50):
 
 gap_df = decile_gap_by_year(econ, gdp_col, min_countries=50)
 
-# baseline year = first available year in the filtered series
 base_year = int(gap_df["Year"].iloc[0])
 
 gap_df["gdp_pct_change"] = (
@@ -477,8 +476,8 @@ gap_df["gap_pct_change"] = (
 fig, ax = plt.subplots(figsize=(14, 9))
 add_title_and_subtitle(
     fig,
-    "Prosperity Rose, But So Did the Global Income Gap",
-    f"Global average GDP per capita and the rich-poor country gap, indexed to {base_year} = 0%"
+    "Global Income Increased, But So Did Inequality",
+    "Average income rose over time, but the gap between richer and poorer countries also grew"
 )
 
 ax.plot(
@@ -499,13 +498,11 @@ ax.axhline(0, linestyle="--", linewidth=1, color="gray")
 
 ax.set_xlabel("Year", fontsize=13)
 ax.set_ylabel(f"% change since {base_year}", fontsize=13)
-ax.set_title("Rising average prosperity did not mean equally shared gains", fontsize=15)
 ax.legend(loc="upper left", fontsize=11)
 
 ax.spines["top"].set_visible(False)
 ax.spines["right"].set_visible(False)
 
-# annotate final GDP growth
 gdp_last = gap_df.iloc[-1]
 ax.annotate(
     f"Average GDP per capita\n+{gdp_last['gdp_pct_change']:.0f}% since {base_year}",
@@ -517,7 +514,6 @@ ax.annotate(
     bbox=dict(facecolor="white", alpha=0.9, edgecolor="none")
 )
 
-# annotate final inequality growth
 gap_last = gap_df.iloc[-1]
 ax.annotate(
     f"Rich-poor country gap\n+{gap_last['gap_pct_change']:.0f}% since {base_year}",
@@ -529,5 +525,5 @@ ax.annotate(
     bbox=dict(facecolor="white", alpha=0.9, edgecolor="none")
 )
 
-plt.savefig("Figure_4_improved.png", dpi=300, bbox_inches="tight")
+plt.savefig("Figure_4.png", dpi=300, bbox_inches="tight")
 plt.show()
