@@ -426,9 +426,9 @@ plt.show()
 
 # =========================
 # FIGURE 4
-# CON SIDE: INEQUALITY OVER TIME
+# CON SIDE: GROWTH WITH UNEVEN GAINS
 # =========================
-def decile_gap_by_year(df, value_col, min_countries=50):
+def distribution_stats_by_year(df, value_col, min_countries=50):
     rows = []
 
     valid = df.dropna(subset=[value_col]).copy()
@@ -440,88 +440,202 @@ def decile_gap_by_year(df, value_col, min_countries=50):
         if n < min_countries:
             continue
 
-        k = max(1, int(np.floor(n * 0.10)))
+        p10 = np.percentile(vals, 10)
+        p25 = np.percentile(vals, 25)
+        p50 = np.percentile(vals, 50)
+        p75 = np.percentile(vals, 75)
+        p90 = np.percentile(vals, 90)
+        mean_val = vals.mean()
 
-        bottom_mean = vals[:k].mean()
-        top_mean = vals[-k:].mean()
-        global_mean = vals.mean()
-
-        if bottom_mean <= 0:
+        if p10 <= 0 or p25 <= 0:
             continue
-
-        gap_ratio = top_mean / bottom_mean
 
         rows.append({
             "Year": year,
-            "global_mean_gdp": global_mean,
-            "top_bottom_ratio": gap_ratio,
+            "mean_gdp": mean_val,
+            "p10": p10,
+            "p25": p25,
+            "p50": p50,
+            "p75": p75,
+            "p90": p90,
+            "p90_p10_ratio": p90 / p10,
             "n_countries": n
         })
 
-    out = pd.DataFrame(rows).sort_values("Year").reset_index(drop=True)
-    return out
+    return pd.DataFrame(rows).sort_values("Year").reset_index(drop=True)
 
-gap_df = decile_gap_by_year(econ, gdp_col, min_countries=50)
+dist_df = distribution_stats_by_year(econ, gdp_col, min_countries=50)
 
-base_year = int(gap_df["Year"].iloc[0])
+base_year = int(dist_df["Year"].iloc[0])
 
-gap_df["gdp_pct_change"] = (
-    (gap_df["global_mean_gdp"] / gap_df["global_mean_gdp"].iloc[0]) - 1
+# Indexed series for left panel
+dist_df["mean_pct_change"] = (
+    (dist_df["mean_gdp"] / dist_df["mean_gdp"].iloc[0]) - 1
 ) * 100
 
-gap_df["gap_pct_change"] = (
-    (gap_df["top_bottom_ratio"] / gap_df["top_bottom_ratio"].iloc[0]) - 1
+dist_df["median_pct_change"] = (
+    (dist_df["p50"] / dist_df["p50"].iloc[0]) - 1
 ) * 100
 
-fig, ax = plt.subplots(figsize=(14, 9))
+dist_df["gap_pct_change"] = (
+    (dist_df["p90_p10_ratio"] / dist_df["p90_p10_ratio"].iloc[0]) - 1
+) * 100
+
+fig, axes = plt.subplots(1, 2, figsize=(15, 7))
 add_title_and_subtitle(
     fig,
     "Global Income Increased, But So Did Inequality",
-    "Average income rose over time, but the gap between richer and poorer countries also grew"
+    "Most countries got richer, but cross-country gaps remained wide"
+)
+fig.subplots_adjust(top=0.82, wspace=0.28)
+
+# -------------------------
+# Left panel: indexed trends
+# -------------------------
+ax = axes[0]
+
+# leave extra room on the right for direct labels
+ax.set_xlim(dist_df["Year"].min(), dist_df["Year"].max() + 4)
+
+# Blue: average (solid, thinner, slightly transparent)
+ax.plot(
+    dist_df["Year"], dist_df["mean_pct_change"],
+    linewidth=2.6, marker="o", markersize=3,
+    color="#1f77b4", alpha=0.8,
+    label="Global average GDP per capita"
 )
 
+# Green: median (dashed, slightly thicker, fully opaque)
 ax.plot(
-    gap_df["Year"], gap_df["gdp_pct_change"],
-    linewidth=3, marker="o", markersize=4,
-    label="Global average GDP per capita",
-    color="#1f77b4"
+    dist_df["Year"], dist_df["median_pct_change"],
+    linewidth=3.0, linestyle="--", marker="o", markersize=3,
+    color="#2ca02c", alpha=1.0,
+    label="Median country GDP per capita"
 )
 
+# Orange: 90/10 gap
 ax.plot(
-    gap_df["Year"], gap_df["gap_pct_change"],
-    linewidth=3, marker="o", markersize=4,
-    label="Gap between richest 10% and poorest 10% of countries",
-    color="#d95f02"
+    dist_df["Year"], dist_df["gap_pct_change"],
+    linewidth=3.0, marker="o", markersize=3,
+    color="#d95f02", alpha=1.0,
+    label="Gap between 90th and 10th percentiles"
 )
 
 ax.axhline(0, linestyle="--", linewidth=1, color="gray")
-
-ax.set_xlabel("Year", fontsize=13)
-ax.set_ylabel(f"% change since {base_year}", fontsize=13)
-ax.legend(loc="upper left", fontsize=11)
-
+ax.set_title("Growth was broad, but gaps persisted", fontsize=14)
+ax.set_xlabel("Year")
+ax.set_ylabel(f"% change since {base_year}")
 ax.spines["top"].set_visible(False)
 ax.spines["right"].set_visible(False)
 
-gdp_last = gap_df.iloc[-1]
+# remove legend
+# ax.legend(...)
+
+# -------------------------
+# Direct labels at line ends
+# -------------------------
+last_year = dist_df["Year"].iloc[-1]
+label_x = last_year + 0.8
+
+mean_y = dist_df["mean_pct_change"].iloc[-1]
+median_y = dist_df["median_pct_change"].iloc[-1]
+gap_y = dist_df["gap_pct_change"].iloc[-1]
+
+ax.text(
+    label_x, mean_y,
+    "Global Average",
+    color="#1f77b4",
+    fontsize=10,
+    va="center",
+    ha="left"
+)
+
+ax.text(
+    label_x, median_y,
+    "Median Country",
+    color="#2ca02c",
+    fontsize=10,
+    va="center",
+    ha="left"
+)
+
+ax.text(
+    label_x, gap_y,
+    "90/10 Gap",
+    color="#d95f02",
+    fontsize=10,
+    va="center",
+    ha="left"
+)
+
+# -------------------------
+# Short callout annotations
+# -------------------------
 ax.annotate(
-    f"Average GDP per capita\n+{gdp_last['gdp_pct_change']:.0f}% since {base_year}",
-    xy=(gdp_last["Year"], gdp_last["gdp_pct_change"]),
-    xytext=(0.73, 0.78),
+    f"+{mean_y:.0f}%",
+    xy=(last_year, mean_y),
+    xytext=(0.67, 0.74),
     textcoords="axes fraction",
     arrowprops=dict(arrowstyle="->"),
-    fontsize=11,
+    fontsize=10,
     bbox=dict(facecolor="white", alpha=0.9, edgecolor="none")
 )
 
-gap_last = gap_df.iloc[-1]
 ax.annotate(
-    f"Rich-poor country gap\n+{gap_last['gap_pct_change']:.0f}% since {base_year}",
-    xy=(gap_last["Year"], gap_last["gap_pct_change"]),
-    xytext=(0.70, 0.48),
+    f"+{median_y:.0f}%",
+    xy=(last_year, median_y),
+    xytext=(0.60, 0.60),
     textcoords="axes fraction",
     arrowprops=dict(arrowstyle="->"),
-    fontsize=11,
+    fontsize=10,
+    bbox=dict(facecolor="white", alpha=0.9, edgecolor="none")
+)
+
+ax.annotate(
+    f"+{gap_y:.0f}%",
+    xy=(last_year, gap_y),
+    xytext=(0.64, 0.38),
+    textcoords="axes fraction",
+    arrowprops=dict(arrowstyle="->"),
+    fontsize=10,
+    bbox=dict(facecolor="white", alpha=0.9, edgecolor="none")
+)
+
+# -------------------------
+# Right panel: distribution
+# -------------------------
+ax = axes[1]
+
+ax.fill_between(
+    dist_df["Year"], dist_df["p10"], dist_df["p90"],
+    alpha=0.18, label="10th–90th percentile range"
+)
+
+ax.fill_between(
+    dist_df["Year"], dist_df["p25"], dist_df["p75"],
+    alpha=0.32, label="25th–75th percentile range"
+)
+
+ax.plot(
+    dist_df["Year"], dist_df["p50"],
+    linewidth=2.8, label="Median country"
+)
+
+ax.set_yscale("log")
+ax.set_title("Income spread remained wide as countries grew richer", fontsize=14)
+ax.set_xlabel("Year")
+ax.set_ylabel("GDP per capita (log scale)")
+ax.legend(loc="upper left", fontsize=10)
+ax.spines["top"].set_visible(False)
+ax.spines["right"].set_visible(False)
+
+ax.annotate(
+    "Most countries got richer,\nbut the spread stayed wide",
+    xy=(2008, dist_df.loc[dist_df["Year"] == 2008, "p75"].iloc[0]),
+    xytext=(0.44, 0.80),
+    textcoords="axes fraction",
+    arrowprops=dict(arrowstyle="->"),
+    fontsize=10,
     bbox=dict(facecolor="white", alpha=0.9, edgecolor="none")
 )
 
